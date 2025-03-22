@@ -60,7 +60,7 @@ const AdminDashboard = () => {
           </button>
         </div>
       </div>
-      <Outlet name={currentUser?.name} />
+      <Outlet />
     </div>
   );
 };

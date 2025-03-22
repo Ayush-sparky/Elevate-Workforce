@@ -55,6 +55,7 @@ const CompanyApplicationDetail = () => {
 
   // Format the date
   const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
     const options = { year: "numeric", month: "long", day: "numeric" };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
@@ -84,14 +85,22 @@ const CompanyApplicationDetail = () => {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-8 text-gray-500">
-          Application not found.
+          Application not found or has been deleted.
         </div>
-        <Link to="/dashboard" className="text-blue-500 hover:text-blue-700">
+        <Link
+          to="/company-dashboard"
+          className="text-blue-500 hover:text-blue-700"
+        >
           Back to Dashboard
         </Link>
       </div>
     );
   }
+
+  // Check if job or applicant data exists
+  const hasJobData = application.job && Object.keys(application.job).length > 0;
+  const hasApplicantData =
+    application.applicant && Object.keys(application.applicant).length > 0;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -108,7 +117,11 @@ const CompanyApplicationDetail = () => {
       <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
         <div className="border-b pb-4 mb-4">
           <div className="flex justify-between items-center mb-2">
-            <h2 className="text-2xl font-semibold">Applicant Information</h2>
+            <h2 className="text-2xl font-semibold">
+              {hasApplicantData
+                ? "Applicant Information"
+                : "Applicant Information (Deleted)"}
+            </h2>
             <span
               className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(
                 application.status
@@ -118,50 +131,74 @@ const CompanyApplicationDetail = () => {
                 application.status.slice(1)}
             </span>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-gray-600">Name</p>
-              <p className="font-semibold">{application.applicant.name}</p>
+
+          {hasApplicantData ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-gray-600">Name</p>
+                <p className="font-semibold">{application.applicant.name}</p>
+              </div>
+              <div>
+                <p className="text-gray-600">Email</p>
+                <p className="font-semibold">{application.applicant.email}</p>
+              </div>
+              <div>
+                <p className="text-gray-600">Phone</p>
+                <p className="font-semibold">
+                  {application.applicant.phoneNumber || "N/A"}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-600">Applied On</p>
+                <p className="font-semibold">
+                  {formatDate(application.appliedDate)}
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-gray-600">Email</p>
-              <p className="font-semibold">{application.applicant.email}</p>
-            </div>
-            <div>
-              <p className="text-gray-600">Phone</p>
-              <p className="font-semibold">
-                {application.applicant.phoneNumber}
+          ) : (
+            <div className="p-4 bg-yellow-50 rounded-md">
+              <p className="text-yellow-700">
+                The applicant information is no longer available. The user
+                account may have been deleted.
               </p>
             </div>
-            <div>
-              <p className="text-gray-600">Applied On</p>
-              <p className="font-semibold">
-                {formatDate(application.appliedDate)}
-              </p>
-            </div>
-          </div>
+          )}
         </div>
 
         <div className="border-b pb-4 mb-4">
-          <h2 className="text-2xl font-semibold mb-2">Job Details</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <p className="text-gray-600">Job Title</p>
-              <p className="font-semibold">{application.job.title}</p>
+          <h2 className="text-2xl font-semibold mb-2">
+            {hasJobData ? "Job Details" : "Job Details (Deleted)"}
+          </h2>
+
+          {hasJobData ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <p className="text-gray-600">Job Title</p>
+                  <p className="font-semibold">{application.job.title}</p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Location</p>
+                  <p className="font-semibold">{application.job.location}</p>
+                </div>
+              </div>
+              <div className="mb-4">
+                <p className="text-gray-600">Job Description</p>
+                <p className="mt-1">{application.job.description}</p>
+              </div>
+              <div>
+                <p className="text-gray-600">Requirements</p>
+                <p className="mt-1">{application.job.requirements}</p>
+              </div>
+            </>
+          ) : (
+            <div className="p-4 bg-yellow-50 rounded-md">
+              <p className="text-yellow-700">
+                The job information is no longer available. The job may have
+                been deleted.
+              </p>
             </div>
-            <div>
-              <p className="text-gray-600">Location</p>
-              <p className="font-semibold">{application.job.location}</p>
-            </div>
-          </div>
-          <div className="mb-4">
-            <p className="text-gray-600">Job Description</p>
-            <p className="mt-1">{application.job.description}</p>
-          </div>
-          <div>
-            <p className="text-gray-600">Requirements</p>
-            <p className="mt-1">{application.job.requirements}</p>
-          </div>
+          )}
         </div>
 
         {application.coverLetter && (

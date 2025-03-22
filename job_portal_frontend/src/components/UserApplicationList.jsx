@@ -37,8 +37,6 @@ const UserApplicationsList = () => {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  // Handler for back button
-
   // Status badge component
   const StatusBadge = ({ status }) => {
     const getStatusStyles = () => {
@@ -84,8 +82,8 @@ const UserApplicationsList = () => {
   if (applications.length === 0) {
     return (
       <div className="max-w-4xl mx-auto py-8 px-4">
-        <button
-          onClick={handleGoBack}
+        <Link
+          to="/user-dashboard"
           className="mb-4 flex items-center text-blue-600 hover:text-blue-800"
         >
           <svg
@@ -103,7 +101,7 @@ const UserApplicationsList = () => {
             ></path>
           </svg>
           Back
-        </button>
+        </Link>
         <div className="bg-white shadow rounded-lg p-6 text-center">
           <h2 className="text-xl font-medium text-gray-800 mb-2">
             No Applications Found
@@ -125,7 +123,7 @@ const UserApplicationsList = () => {
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
       <Link
-        to='/user-dashboard'
+        to="/user-dashboard"
         className="mb-4 flex items-center text-blue-600 hover:text-blue-800"
       >
         <svg
@@ -160,18 +158,34 @@ const UserApplicationsList = () => {
                 <div className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h2 className="text-lg font-semibold text-gray-800">
-                        {application.job.title}
-                      </h2>
-                      <div className="flex items-center mt-1">
-                        <span className="text-gray-600">
-                          {application.company.name}
-                        </span>
-                        <span className="mx-2 text-gray-400">•</span>
-                        <span className="text-gray-600">
-                          {application.job.location}
-                        </span>
-                      </div>
+                      {/* Check if job exists before accessing its properties */}
+                      {application.job ? (
+                        <>
+                          <h2 className="text-lg font-semibold text-gray-800">
+                            {application.job.title}
+                          </h2>
+                          <div className="flex items-center mt-1">
+                            <span className="text-gray-600">
+                              {application.company?.name || "Unknown Company"}
+                            </span>
+                            <span className="mx-2 text-gray-400">•</span>
+                            <span className="text-gray-600">
+                              {application.job.location || "Unknown Location"}
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <h2 className="text-lg font-semibold text-gray-800">
+                            [Deleted Job]
+                          </h2>
+                          <div className="flex items-center mt-1">
+                            <span className="text-gray-600">
+                              {application.company?.name || "Unknown Company"}
+                            </span>
+                          </div>
+                        </>
+                      )}
                     </div>
                     <StatusBadge status={application.status} />
                   </div>

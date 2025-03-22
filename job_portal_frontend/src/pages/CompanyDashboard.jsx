@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../context/authContext"; // Adjust path as needed
 import axios from "axios";
-import {Link} from 'react-router-dom'
+import { Link } from "react-router-dom";
 
 const CompanyDashboard = () => {
   const { currentUser, logout } = useContext(AuthContext);
@@ -55,7 +55,12 @@ const CompanyDashboard = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      setApplications(response.data);
+
+      // Filter out applications with null job references
+      const validApplications = response.data.filter(
+        (app) => app.job && app.job._id
+      );
+      setApplications(validApplications);
     } catch (err) {
       setApplicationError("Failed to fetch applications");
       console.error(err);
@@ -133,7 +138,10 @@ const CompanyDashboard = () => {
         await axios.delete(`http://localhost:5000/api/jobs/${jobId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        fetchJobs();
+
+        // After deleting a job, refresh both jobs and applications
+        await fetchJobs();
+        await fetchApplications();
       } catch (err) {
         setError("Failed to delete job");
       }
@@ -182,6 +190,12 @@ const CompanyDashboard = () => {
     }
   };
 
+  // Safely get application count for a job
+  const getApplicationCountForJob = (jobId) => {
+    return applications.filter((app) => app.job && app.job._id === jobId)
+      .length;
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
@@ -220,15 +234,32 @@ const CompanyDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <p className="text-gray-600">Company Name</p>
-            <p className="font-semibold">{currentUser?.name}</p>
+            <p className="font-semibold">
+              {currentUser?.name || "Not available"}
+            </p>
           </div>
           <div>
             <p className="text-gray-600">Email</p>
-            <p className="font-semibold">{currentUser?.email}</p>
+            <p className="font-semibold">
+              {currentUser?.email || "Not available"}
+            </p>
           </div>
           {/* Add more company details as needed */}
         </div>
       </div>
+
+      {/* Error messages */}
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
+      )}
+
+      {applicationError && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {applicationError}
+        </div>
+      )}
 
       {/* Job Form */}
       {isFormVisible && (
@@ -420,10 +451,7 @@ const CompanyDashboard = () => {
                         {new Date(job.createdAt).toLocaleDateString()}
                       </td>
                       <td className="py-3 px-6 text-left">
-                        {
-                          applications.filter((app) => app.job._id === job._id)
-                            .length
-                        }
+                        {getApplicationCountForJob(job._id)}
                       </td>
                       <td className="py-3 px-6 text-center">
                         <div className="flex items-center justify-center space-x-2">
@@ -474,66 +502,71 @@ const CompanyDashboard = () => {
                   </tr>
                 </thead>
                 <tbody className="text-gray-600 text-sm">
-                  {applications.map((application) => (
-                    <tr
-                      key={application._id}
-                      className="border-b border-gray-200 hover:bg-gray-50"
-                    >
-                      <td className="py-3 px-6 text-left">
-                        <div>
-                          <p className="font-medium">
-                            {application.applicant.name}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {application.applicant.email}
-                          </p>
-                        </div>
-                      </td>
-                      <td className="py-3 px-6 text-left">
-                        {application.job.title}
-                      </td>
-                      <td className="py-3 px-6 text-left">
-                        {new Date(application.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="py-3 px-6 text-left">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs ${getStatusColor(
-                            application.status
-                          )}`}
-                        >
-                          {application.status.charAt(0).toUpperCase() +
-                            application.status.slice(1)}
-                        </span>
-                      </td>
-                      <td className="py-3 px-6 text-center">
-                        <div className="flex items-center justify-center">
-                          <select
-                            value={application.status}
-                            onChange={(e) =>
-                              updateApplicationStatus(
-                                application._id,
-                                e.target.value
-                              )
-                            }
-                            className="bg-white border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  {applications.map((application) => {
+                    // Skip rendering if application.job is null or undefined
+                    if (!application.job) return null;
+
+                    return (
+                      <tr
+                        key={application._id}
+                        className="border-b border-gray-200 hover:bg-gray-50"
+                      >
+                        <td className="py-3 px-6 text-left">
+                          <div>
+                            <p className="font-medium">
+                              {application.applicant?.name || "Unknown"}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {application.applicant?.email || "No email"}
+                            </p>
+                          </div>
+                        </td>
+                        <td className="py-3 px-6 text-left">
+                          {application.job?.title || "Job no longer exists"}
+                        </td>
+                        <td className="py-3 px-6 text-left">
+                          {new Date(application.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="py-3 px-6 text-left">
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs ${getStatusColor(
+                              application.status || "pending"
+                            )}`}
                           >
-                            <option value="pending">Pending</option>
-                            <option value="reviewed">Reviewed</option>
-                            <option value="interviewed">Interviewed</option>
-                            <option value="accepted">Accepted</option>
-                            <option value="rejected">Rejected</option>
-                          </select>
-                          <Link
-                            to={`/company-application-detail/${application._id}`}
-                            className="ml-2 text-blue-500 hover:text-blue-700"
-                            rel="noopener noreferrer"
-                          >
-                            View
-                          </Link>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                            {application.status?.charAt(0).toUpperCase() +
+                              application.status?.slice(1) || "Pending"}
+                          </span>
+                        </td>
+                        <td className="py-3 px-6 text-center">
+                          <div className="flex items-center justify-center">
+                            <select
+                              value={application.status || "pending"}
+                              onChange={(e) =>
+                                updateApplicationStatus(
+                                  application._id,
+                                  e.target.value
+                                )
+                              }
+                              className="bg-white border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                              <option value="pending">Pending</option>
+                              <option value="reviewed">Reviewed</option>
+                              <option value="interviewed">Interviewed</option>
+                              <option value="accepted">Accepted</option>
+                              <option value="rejected">Rejected</option>
+                            </select>
+                            <Link
+                              to={`/company-application-detail/${application._id}`}
+                              className="ml-2 text-blue-500 hover:text-blue-700"
+                              rel="noopener noreferrer"
+                            >
+                              View
+                            </Link>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

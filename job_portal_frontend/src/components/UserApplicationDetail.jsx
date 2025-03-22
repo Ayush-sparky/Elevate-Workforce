@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 
 const UserApplicationDetail = () => {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { id } = useParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchUserApplications() {
@@ -81,6 +82,10 @@ const UserApplicationDetail = () => {
     );
   };
 
+  const handleGoBack = () => {
+    navigate("/user-application-list");
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-96">
@@ -96,7 +101,7 @@ const UserApplicationDetail = () => {
           <h2 className="text-xl font-medium text-red-800 mb-2">Error</h2>
           <p className="text-red-700">{error}</p>
           <Link
-            to="/applications"
+            to="/user-application-list"
             className="mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
           >
             Back to Applications
@@ -118,7 +123,7 @@ const UserApplicationDetail = () => {
             access to it.
           </p>
           <Link
-            to="/applications"
+            to="/user-application-list"
             className="inline-block px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
           >
             View All Applications
@@ -127,6 +132,9 @@ const UserApplicationDetail = () => {
       </div>
     );
   }
+
+  // Check if the job has been deleted
+  const isJobDeleted = !currentApplication.job;
 
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
@@ -156,23 +164,89 @@ const UserApplicationDetail = () => {
             </svg>
           </li>
           <li className="text-gray-600 truncate">
-            {currentApplication.job.title} at {currentApplication.company.name}
+            {isJobDeleted
+              ? "Deleted Job"
+              : `${currentApplication.job.title} at ${
+                  currentApplication.company?.name || "Unknown Company"
+                }`}
           </li>
         </ol>
       </nav>
 
+      {isJobDeleted && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4 flex items-start">
+          <div className="flex-shrink-0 mt-0.5">
+            <svg
+              className="h-5 w-5 text-amber-400"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </div>
+          <div className="ml-3">
+            <h3 className="text-sm font-medium text-amber-800">
+              Job Listing Removed
+            </h3>
+            <div className="mt-1 text-sm text-amber-700">
+              <p>
+                This job listing has been removed by the employer. Your
+                application data is still available for your reference.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white shadow rounded-lg overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-6 relative">
+        <div
+          className={`px-6 py-6 relative ${
+            isJobDeleted
+              ? "bg-gradient-to-r from-gray-600 to-gray-700"
+              : "bg-gradient-to-r from-blue-600 to-indigo-700"
+          }`}
+        >
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
             <div className="mb-4 md:mb-0">
               <h1 className="text-2xl font-bold text-white mb-1">
-                {currentApplication.job.title}
+                {isJobDeleted ? (
+                  <span className="flex items-center">
+                    <svg
+                      className="w-6 h-6 mr-2 text-gray-300"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      ></path>
+                    </svg>
+                    Deleted Job Position
+                  </span>
+                ) : (
+                  currentApplication.job.title
+                )}
               </h1>
               <div className="flex items-center text-blue-100">
-                <span>{currentApplication.company.name}</span>
-                <span className="mx-2">•</span>
-                <span>{currentApplication.job.location}</span>
+                <span>
+                  {currentApplication.company?.name || "Unknown Company"}
+                </span>
+                {!isJobDeleted && (
+                  <>
+                    <span className="mx-2">•</span>
+                    <span>{currentApplication.job.location}</span>
+                  </>
+                )}
               </div>
             </div>
             <StatusBadge status={currentApplication.status} />
@@ -259,6 +333,51 @@ const UserApplicationDetail = () => {
 
         {/* Application Content */}
         <div className="px-6 py-4">
+          {isJobDeleted && (
+            <div className="mb-6">
+              <div className="bg-gray-50 rounded-lg p-6 border border-gray-200 text-center">
+                <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                  <svg
+                    className="w-8 h-8 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    ></path>
+                  </svg>
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  This job listing is no longer available
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  The employer may have filled the position or removed the job
+                  listing. Your application details are preserved for your
+                  records.
+                </p>
+                <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-4">
+                  <Link
+                    to="/user-dashboard"
+                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 w-full sm:w-auto justify-center"
+                  >
+                    Browse Available Jobs
+                  </Link>
+                  <button
+                    onClick={handleGoBack}
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 w-full sm:w-auto justify-center"
+                  >
+                    Back to Applications
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-2">
               Cover Letter
@@ -339,10 +458,24 @@ const UserApplicationDetail = () => {
                   </p>
                   <p className="text-sm text-gray-600 mt-1">
                     You submitted your application for the{" "}
-                    {currentApplication.job.title} position at{" "}
-                    {currentApplication.company.name}.
+                    {isJobDeleted ? "position" : currentApplication.job.title}{" "}
+                    at {currentApplication.company?.name || "the company"}.
                   </p>
                 </div>
+
+                {isJobDeleted && (
+                  <div className="relative">
+                    <div className="absolute -left-6 mt-1.5 w-4 h-4 rounded-full bg-gray-500 border-2 border-white"></div>
+                    <p className="text-sm text-gray-500">Unknown date</p>
+                    <p className="font-medium text-gray-800">
+                      Job Listing Removed
+                    </p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      The employer has removed this job listing. This could mean
+                      the position was filled or no longer available.
+                    </p>
+                  </div>
+                )}
 
                 <div className="relative">
                   <div className="absolute -left-6 mt-1.5 w-4 h-4 rounded-full bg-blue-500 border-2 border-white"></div>
@@ -382,12 +515,12 @@ const UserApplicationDetail = () => {
             >
               Back to Applications
             </Link>
-            {currentApplication.status === "shortlisted" && (
+            {!isJobDeleted && currentApplication.status === "shortlisted" && (
               <button className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                 Contact Employer
               </button>
             )}
-            {currentApplication.status === "pending" && (
+            {!isJobDeleted && currentApplication.status === "pending" && (
               <button className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
                 Withdraw Application
               </button>
@@ -399,4 +532,4 @@ const UserApplicationDetail = () => {
   );
 };
 
-export default UserApplicationDetail;``
+export default UserApplicationDetail;
