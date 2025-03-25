@@ -79,6 +79,7 @@ const HomePage = () => {
       content:
         "Elevate Workforce helped me find my dream role in just two weeks! The platform was intuitive and connected me with companies that truly matched my skills and aspirations.",
       avatar: "https://randomuser.me/api/portraits/women/32.jpg",
+      rating: "★★★★",
     },
     {
       id: 2,
@@ -88,6 +89,7 @@ const HomePage = () => {
       content:
         "As a hiring manager, Elevate Workforce has revolutionized our recruitment process. The quality of candidates we've found has exceeded our expectations.",
       avatar: "https://randomuser.me/api/portraits/men/41.jpg",
+      rating: `★★★★${(<i class="fa-solid fa-star"></i>)}`,
     },
     {
       id: 3,
@@ -97,6 +99,7 @@ const HomePage = () => {
       content:
         "After months of job searching on other platforms, I found my perfect match within days on Elevate Workforce. The personalized job recommendations were spot on!",
       avatar: "https://randomuser.me/api/portraits/women/63.jpg",
+      rating: "★★★★★",
     },
   ];
 
@@ -229,7 +232,7 @@ const HomePage = () => {
               {topCompanies.map((company) => (
                 <div
                   key={company.id}
-                  className="bg-white p-6 shadow-md rounded-lg flex items-center justify-center"
+                  className="bg-amber-200 p-6 shadow-md rounded-lg flex items-center justify-center"
                 >
                   <img
                     src={company.logo}
@@ -273,7 +276,7 @@ const HomePage = () => {
                 <Link
                   key={category.id}
                   to="#"
-                  className="bg-gray-50 hover:bg-blue-50 p-6 rounded-lg shadow-sm transition duration-300 border border-gray-100"
+                  className="bg-amber-200 hover:bg-amber-300 p-6 rounded-lg shadow-sm transition duration-300 border border-gray-100"
                 >
                   <div className="flex items-center justify-between">
                     <div>
@@ -364,23 +367,23 @@ const HomePage = () => {
               {testimonials.map((testimonial) => (
                 <div
                   key={testimonial.id}
-                  className="bg-gray-50 p-8 rounded-lg shadow-sm"
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-8 rounded-lg shadow-sm"
                 >
                   <div className="flex items-center mb-4">
                     <img
-                      src={`/api/placeholder/60/60`}
+                      src={testimonial.avatar}
                       alt={testimonial.name}
                       className="w-12 h-12 rounded-full mr-4"
                     />
                     <div>
-                      <h4 className="font-semibold">{testimonial.name}</h4>
-                      <p className="text-gray-600 text-sm">
+                      <h4 className="font-bold text-xl">{testimonial.name}</h4>
+                      <p className="text-gray-300 text-md">
                         {testimonial.position}, {testimonial.company}
                       </p>
                     </div>
                   </div>
-                  <p className="text-gray-700 italic">{testimonial.content}</p>
-                  <div className="mt-4 text-yellow-500">★★★★★</div>
+                  <p className="text-gray-300 italic">{testimonial.content}</p>
+                  <div className="mt-4 text-yellow-500">{testimonial.rating}</div>
                 </div>
               ))}
             </div>
