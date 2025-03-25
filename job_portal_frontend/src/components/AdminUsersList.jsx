@@ -81,7 +81,7 @@ const Users = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex w-full items-center justify-center h-full">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
       </div>
     );
@@ -115,7 +115,7 @@ const Users = () => {
               className={`px-4 py-4 font-medium text-sm focus:outline-none ${
                 activeTab === "users"
                   ? "border-b-2 border-blue-500 text-blue-600"
-                  : "text-gray-500 hover:text-gray-700"
+                  : "text-gray-500 hover:text-gray-700 cursor-pointer"
               }`}
               onClick={() => setActiveTab("users")}
             >
@@ -125,7 +125,7 @@ const Users = () => {
               className={`px-4 py-4 font-medium text-sm focus:outline-none ${
                 activeTab === "companies"
                   ? "border-b-2 border-blue-500 text-blue-600"
-                  : "text-gray-500 hover:text-gray-700"
+                  : "text-gray-500 hover:text-gray-700 cursor-pointer"
               }`}
               onClick={() => setActiveTab("companies")}
             >
